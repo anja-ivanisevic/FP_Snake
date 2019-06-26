@@ -17,10 +17,10 @@ import qualified Config
 render :: Game.State -> Picture
 render state =
        let contentScale = Game.contentScale state
-           content      = pictures [ D.board
-                                   , D.snake $ (Game.snakes $ Game.snakeState state) !! 0
-                                   , D.food $ Game.foodState state
-                                   ]
+           content      = pictures  $ [D.board]
+                                    ++  (D.snake state)
+                                    ++ [D.food $ Game.foodState state]
+
            splashScreen = D.splash $ Game.windowSize state
            wonScreen    = D.won    $ Game.windowSize state
            lostScreen   = D.lost   $ Game.windowSize state

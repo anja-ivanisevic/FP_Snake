@@ -16,11 +16,11 @@ import qualified Pictures as P
 import Graphics.Gloss
 import Graphics.Gloss.Game
 
-showAt :: Board.Position -> Picture -> Picture
-showAt (x, y) = translate (blockSize * x + boardOffsetHorizontal) (blockSize * y + boardOffsetVertical)
+showAt :: Picture -> Board.Position -> Picture
+showAt picture (x, y) = translate (blockSize * x + boardOffsetHorizontal) (blockSize * y + boardOffsetVertical) picture
 
 board :: Picture
-board = showAt (0, 0) Board.picture
+board = showAt Board.picture (0, 0)
 
 fullImage :: Picture -> (Int, Int) -> Picture
 fullImage picture windowSize =
@@ -36,5 +36,5 @@ splash windowSize     = fullImage P.splash windowSize
 won windowSize        = fullImage P.won windowSize
 lost windowSize       = fullImage P.lost windowSize
 
-snake state = showAt (Game.position state) $ P.snake
-food state = showAt (Game.positionF state) $ P.food
+food state = showAt (P.food) $ Game.positionF state
+snake state = map (showAt (P.snake)) $ map Game.position $ Game.snakes $ Game.snakeState state

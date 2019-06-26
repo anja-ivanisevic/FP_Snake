@@ -79,7 +79,7 @@ update seconds oldState =
        let newState = oldState { Game.snakeState  = snakesUpdate seconds oldState
                                }
        in if      itemsCollide newState (snakeState newState) (foodState newState)
-            then newState {Game.foodState = foodUpdate oldState}
+            then newState {Game.foodState = foodUpdate oldState, Game.snakeState = growSnake (snakeState newState)}
           else    newState
 
 
@@ -148,6 +148,16 @@ initialSnake = ItemState { position = Board.initialSnakePosition
 initialSnakeState = SnakeItemState { snakes = [initialSnake]
                                    }
 
+
+growSnake :: SnakeItemState -> SnakeItemState
+growSnake oldSnakeState =
+  let newItem = ItemState { position = position $ snakes oldSnakeState !! 0
+                            , speed    = (0, -0.1)
+                          }
+
+  in SnakeItemState { snakes = (snakes oldSnakeState) ++ [newItem] }
+
+
 snakesUpdate :: Float -> Game.State -> SnakeItemState
 snakesUpdate seconds oldWorld =
                   let s = snakeUpdate seconds oldWorld
@@ -169,5 +179,9 @@ snakeUpdate seconds oldWorld =
                                                , failureMove  = \ item -> position item
                                                , failureSpeed = \ item -> newSpeed
                                                }
+
+                  -- oldSnakeState = snakes $ snakeState oldWorld
                  -- in map snd $ generalItemMove (snakes Game.snakeState) functions seconds oldWorld
-                in map ( generalItemMove functions seconds oldWorld ) $ snakes $ snakeState oldWorld
+                -- in map ( generalItemMove functions seconds oldWorld ) $ snakes $ snakeState oldWorld
+                   -- newHead = generalItemMove functions seconds oldWorld ((snakes (snakeState oldWorld) !! 0))
+                  in  [generalItemMove functions seconds oldWorld ((snakes (snakeState oldWorld) !! 0))] ++   (init  (snakes $ snakeState oldWorld))
