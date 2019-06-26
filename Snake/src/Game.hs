@@ -66,11 +66,26 @@ handleEvent (EventResize size) state = state { windowSize = size }
 
 handleEvent _ state = state
 
-itemsCollide :: Game.State -> SnakeItemState -> FoodItemState -> Bool
-itemsCollide state item1 item2 = let (x1, y1) = position $ (snakes item1) !! 0
-                                     (x2, y2) = positionF $ item2
-                                     distance = sqrt ( (x1 - x2) ** 2 + (y1 - y2) ** 2 )
-                                 in  distance < 0.5
+
+
+collide :: Board.Position -> Board.Position -> Bool
+collide item1 item2 = let (x1, y1) = item1
+                          (x2, y2) = item2
+                          distance = sqrt ( (x1 - x2) ** 2 + (y1 - y2) ** 2 )
+                      in  distance < 0.5
+
+
+itemsCollide :: SnakeItemState -> FoodItemState -> Bool
+itemsCollide snakeState foodState = let snakePosition = position $ (snakes snakeState) !! 0
+                                        foodPosition  = positionF $ foodState
+                                    in collide snakePosition foodPosition
+
+
+snakesCollide :: SnakeItemState -> Bool
+snakesCollide snakeState = let headPosition  = position $ (snakes snakeState) !! 0
+                               tailPositions = map position $ drop 4 $ snakes snakeState
+                               res           = map (collide headPosition) tailPositions
+                           in or res
 
 
 update :: Float      -- ^ Broj sekundi od prethodnog azuriranja
@@ -78,11 +93,16 @@ update :: Float      -- ^ Broj sekundi od prethodnog azuriranja
        -> Game.State  -- ^ Novo stanje
 update seconds oldState =
        let newState = snakeUpdate seconds oldState
-       in if itemsCollide newState (snakeState newState) (foodState newState)
-            then newState { Game.foodState = foodUpdate oldState,
-                            Game.snakeState = growSnake (snakeState newState)
-                          }
-            else newState
+           n_snakes = n $ snakeState $ newState
+       in if n_snakes > 4 && snakesCollide (snakeState newState)
+              then newState {
+                        mode = ModeLost
+                    }
+          else if itemsCollide (snakeState newState) (foodState newState)
+              then newState { Game.foodState  = foodUpdate oldState,
+                              Game.snakeState = growSnake (snakeState newState)
+                            }
+          else newState
 
 
 
