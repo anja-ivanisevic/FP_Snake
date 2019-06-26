@@ -77,11 +77,12 @@ update :: Float      -- ^ Broj sekundi od prethodnog azuriranja
        -> Game.State  -- ^ Predhodno stanje
        -> Game.State  -- ^ Novo stanje
 update seconds oldState =
-       let newState = oldState { Game.snakeState  = snakesUpdate seconds oldState
-                               }
-       in if      itemsCollide newState (snakeState newState) (foodState newState)
-            then newState {Game.foodState = foodUpdate oldState, Game.snakeState = growSnake (snakeState newState)}
-          else    newState
+       let newState = snakeUpdate seconds oldState
+       in if itemsCollide newState (snakeState newState) (foodState newState)
+            then newState { Game.foodState = foodUpdate oldState,
+                            Game.snakeState = growSnake (snakeState newState)
+                          }
+            else newState
 
 
 
@@ -89,7 +90,7 @@ isItemPositionValid position =
         let check cnr = Board.Hall == (Board.field $ Board.movedBy cnr position)
             offset    = 0.49 -- eps
         in  all check [ (offset, 0), (-offset, 0), (0, offset), (0, -offset) ]
-        
+
 
 data UpdateFunctions = UpdateFunctions { successMove  :: ItemState -> Board.Position
                                        , successSpeed :: ItemState -> (Float, Float)
@@ -101,20 +102,26 @@ generalItemMove :: --(Game.State -> ItemState)
                 UpdateFunctions
                 -> Float
                 -> Game.State
-                -> ItemState
-                -> ItemState
-generalItemMove UpdateFunctions { successMove, successSpeed, failureMove, failureSpeed } seconds oldWorld item =
-                let oldItem         = item
+                -> Game.State
+generalItemMove UpdateFunctions { successMove, successSpeed, failureMove, failureSpeed } seconds oldWorld =
+                let oldSnakeState   = snakeState oldWorld
+                    oldSnake        = snakes oldSnakeState
+                    oldItem         = oldSnake !! 0
                     oldPosition     = position oldItem
                     oldSpeed        = speed oldItem
                     desiredPosition = successMove oldItem
-                in  if isItemPositionValid desiredPosition
-                    then ItemState { position = desiredPosition
-                                          , speed    = successSpeed oldItem
-                                          }
-                    else ItemState { position = failureMove oldItem
-                                           , speed    = failureSpeed oldItem
-                                           }
+                in if isItemPositionValid desiredPosition
+                    then oldWorld {
+                            snakeState = SnakeItemState {
+                                  snakes = [ItemState { position = desiredPosition,
+                                                        speed    = successSpeed oldItem}]
+                                            ++ (init oldSnake),
+                                  n = n oldSnakeState
+                            }
+                        }
+                    else oldWorld {
+                            mode = ModeLost
+                        }
 
 
 
@@ -162,16 +169,8 @@ growSnake oldSnakeState =
                           n = 1 + (n oldSnakeState)}
 
 
-snakesUpdate :: Float -> Game.State -> SnakeItemState
-snakesUpdate seconds oldWorld =
-                  let s = snakeUpdate seconds oldWorld
-                  in SnakeItemState {
-                    snakes = s,
-                    n = n $ snakeState $ oldWorld
-                  }
 
-
-snakeUpdate :: Float -> Game.State -> [ItemState]
+snakeUpdate :: Float -> Game.State -> Game.State
 snakeUpdate seconds oldWorld =
                let newSpeed = case mode oldWorld of
                                    ModeLeft  -> (-0.3, 0)
@@ -185,8 +184,5 @@ snakeUpdate seconds oldWorld =
                                                , failureSpeed = \ item -> newSpeed
                                                }
 
-                  -- oldSnakeState = snakes $ snakeState oldWorld
-                 -- in map snd $ generalItemMove (snakes Game.snakeState) functions seconds oldWorld
-                -- in map ( generalItemMove functions seconds oldWorld ) $ snakes $ snakeState oldWorld
-                   -- newHead = generalItemMove functions seconds oldWorld ((snakes (snakeState oldWorld) !! 0))
-                  in  [generalItemMove functions seconds oldWorld ((snakes (snakeState oldWorld) !! 0))] ++   (init  (snakes $ snakeState oldWorld))
+
+                  in generalItemMove functions seconds oldWorld
