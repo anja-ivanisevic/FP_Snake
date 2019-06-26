@@ -38,7 +38,7 @@ update_ _ = Game.update
 main :: IO ()
 main = let size       = Config.windowSize
            position   = (600, 0)
-           fps        = 30
+           fps        = 20
            background = black
            window     = InWindow "Snake" size position
            updates    = \ seconds state -> case Game.mode state of

@@ -18,7 +18,8 @@ data FoodItemState = FoodItemState { positionF  :: Board.Position,
                                      x :: Int
                                    } deriving Show
 
-data SnakeItemState = SnakeItemState { snakes :: [ItemState]
+data SnakeItemState = SnakeItemState { snakes :: [ItemState],
+                                      n :: Int
                                      } deriving Show
 
 data Mode = ModeSplash
@@ -88,6 +89,7 @@ isItemPositionValid position =
         let check cnr = Board.Hall == (Board.field $ Board.movedBy cnr position)
             offset    = 0.49 -- eps
         in  all check [ (offset, 0), (-offset, 0), (0, offset), (0, -offset) ]
+        
 
 data UpdateFunctions = UpdateFunctions { successMove  :: ItemState -> Board.Position
                                        , successSpeed :: ItemState -> (Float, Float)
@@ -142,37 +144,40 @@ foodUpdate oldWorld =
 -- Snake
 
 initialSnake = ItemState { position = Board.initialSnakePosition
-                          , speed    = (0, -0.1)
+                          , speed    = (0, -0.3)
                          }
 
 initialSnakeState = SnakeItemState { snakes = [initialSnake]
+                                    , n = 0
                                    }
 
 
 growSnake :: SnakeItemState -> SnakeItemState
 growSnake oldSnakeState =
-  let newItem = ItemState { position = position $ snakes oldSnakeState !! 0
-                            , speed    = (0, -0.1)
-                          }
+      let newItem = ItemState { position = position $ snakes oldSnakeState !! (n oldSnakeState),
+                                speed    = (0, -0.3)
+                              }
 
-  in SnakeItemState { snakes = (snakes oldSnakeState) ++ [newItem] }
+      in SnakeItemState { snakes = (snakes oldSnakeState) ++ [newItem],
+                          n = 1 + (n oldSnakeState)}
 
 
 snakesUpdate :: Float -> Game.State -> SnakeItemState
 snakesUpdate seconds oldWorld =
                   let s = snakeUpdate seconds oldWorld
                   in SnakeItemState {
-                    snakes = s
+                    snakes = s,
+                    n = n $ snakeState $ oldWorld
                   }
 
 
 snakeUpdate :: Float -> Game.State -> [ItemState]
 snakeUpdate seconds oldWorld =
                let newSpeed = case mode oldWorld of
-                                   ModeLeft  -> (-0.1, 0)
-                                   ModeRight -> (0.1, 0)
-                                   ModeUp    -> (0, 0.1)
-                                   ModeDown  -> (0, -0.1)
+                                   ModeLeft  -> (-0.3, 0)
+                                   ModeRight -> (0.3, 0)
+                                   ModeUp    -> (0, 0.3)
+                                   ModeDown  -> (0, -0.3)
                                    _        -> (0, 0)
                    functions = UpdateFunctions { successMove  = \ item -> speed item + position item
                                                , successSpeed = \ item -> newSpeed
