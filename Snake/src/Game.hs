@@ -14,8 +14,10 @@ data ItemState = ItemState { position  :: Board.Position
                            , speed     :: (Float, Float)
                            } deriving Show
 
-data FoodItemState = FoodItemState { positionF  :: Board.Position,
-                                     x :: Int
+data FoodItemState = FoodItemState { positionF  :: Board.Position
+                                     , x :: Int
+                                     , foodPositionsX :: [Int]
+                                     , foodPositionsY :: [Int]
                                    } deriving Show
 
 data SnakeItemState = SnakeItemState { snakes :: [ItemState],
@@ -53,15 +55,19 @@ initialState = State { snakeState   = initialSnakeState
 -- | Respond to key events.
 handleEvent :: Event -> State -> State
 
-handleEvent (EventKey (SpecialKey KeyLeft) Down _ _) state  = state { mode = ModeLeft }
-handleEvent (EventKey (SpecialKey KeyDown) Down _ _) state  = state { mode = ModeDown }
-handleEvent (EventKey (SpecialKey KeyRight) Down _ _) state = state { mode = ModeRight }
-handleEvent (EventKey (SpecialKey KeyUp) Down _ _) state    = state { mode = ModeUp }
-handleEvent (EventKey (SpecialKey KeySpace) Down _ _) state = state { mode = ModeStart }
+handleEvent (EventKey (SpecialKey KeyLeft) Down _ _) state  = if (mode state) == ModeRight then state else state { mode = ModeLeft }
+handleEvent (EventKey (SpecialKey KeyDown) Down _ _) state  = if (mode state) == ModeUp then state else state { mode = ModeDown }
+handleEvent (EventKey (SpecialKey KeyRight) Down _ _) state = if (mode state) == ModeLeft then state else state { mode = ModeRight }
+handleEvent (EventKey (SpecialKey KeyUp) Down _ _) state    = if (mode state) == ModeDown then state else state { mode = ModeUp }
+handleEvent (EventKey (SpecialKey KeySpace) Down _ _) state = if (mode state) == ModeLost || (mode state) == ModeSplash || (mode state) == ModeWon
+                                                              then state { mode = ModeStart
+                                                                          , snakeState = initialSnakeState
+                                                                          , foodState  = initialFoodState
+                                                                          }
+                                                              else state
 
 handleEvent (EventKey (Char '2') Down _ _) state = state { contentScale = 2.0 }
 handleEvent (EventKey (Char '1') Down _ _) state = state { contentScale = 1.0 }
-
 handleEvent (EventResize size) state = state { windowSize = size }
 
 handleEvent _ state = state
@@ -92,6 +98,7 @@ update :: Float      -- ^ Broj sekundi od prethodnog azuriranja
        -> Game.State  -- ^ Predhodno stanje
        -> Game.State  -- ^ Novo stanje
 update seconds oldState =
+  if (mode oldState) == ModeWon then oldState else
        let newState = snakeUpdate seconds oldState
            n_snakes = n $ snakeState $ newState
        in if n_snakes > 4 && snakesCollide (snakeState newState)
@@ -100,7 +107,8 @@ update seconds oldState =
                     }
           else if itemsCollide (snakeState newState) (foodState newState)
               then newState { Game.foodState  = foodUpdate oldState,
-                              Game.snakeState = growSnake (snakeState newState)
+                              Game.snakeState = growSnake (snakeState newState),
+                              Game.mode = if (n (snakeState oldState)) > 97 then ModeWon else (mode oldState)
                             }
           else newState
 
@@ -154,17 +162,22 @@ randomList x n = take n $ randomRs (1, x) (mkStdGen (round (unsafePerformIO getP
 
 initialFoodState = let xs = randomList (Config.boardWidth -2) 100
                        ys = randomList (Config.boardHeight -2) 100
-                   in FoodItemState { positionF = (fromIntegral (xs !! 0) :: Float, fromIntegral (ys !! 0) :: Float) ,
-                                      x = 1
+                   in FoodItemState { positionF = (fromIntegral (xs !! 0) :: Float, fromIntegral (ys !! 0) :: Float)
+                                      , x = 1
+                                      , foodPositionsX = xs
+                                      , foodPositionsY = ys
                                     }
 
 foodUpdate :: Game.State -> FoodItemState
 foodUpdate oldWorld =
-            let xs = randomList (Config.boardWidth -2) 100
-                ys = randomList (Config.boardHeight -2) 100
-            in FoodItemState {
+            let xs = foodPositionsX $ foodState $ oldWorld
+                ys = foodPositionsY $ foodState $ oldWorld
+                xn = ((x . foodState) oldWorld) + 1
+            in  FoodItemState {
                       positionF = (fromIntegral (xs !! ((x . foodState) oldWorld)) :: Float, fromIntegral (ys !! ((x . foodState) oldWorld)) :: Float)
-                    , x = ((x . foodState) oldWorld) + 1
+                      , x = xn
+                      , foodPositionsX = xs
+                      , foodPositionsY = ys
                     }
 
 
