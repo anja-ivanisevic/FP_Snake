@@ -35,9 +35,14 @@ data Mode = ModeSplash
           | ModeDown
           deriving (Show, Eq)
 
+data SnakeMode = ModeNormal
+              | ModeSpecial
+              deriving (Show, Eq)
+
 data State = State { snakeState   :: SnakeItemState
                    , foodState  :: FoodItemState
                    , mode         :: Mode
+                   , snakeMode    :: SnakeMode
                    , windowSize   :: (Int, Int)
                    , contentScale :: Float
                    } deriving Show
@@ -47,6 +52,7 @@ initialState :: State
 initialState = State { snakeState   = initialSnakeState
                      , foodState  = initialFoodState
                      , mode         = ModeSplash
+                     , snakeMode    = ModeNormal
                      , windowSize   = Config.windowSize
                      , contentScale = 1
                      }
@@ -108,6 +114,7 @@ update seconds oldState =
           else if itemsCollide (snakeState newState) (foodState newState)
               then newState { Game.foodState  = foodUpdate oldState,
                               Game.snakeState = growSnake (snakeState newState),
+                              Game.snakeMode = if (mod (x (foodState oldState)) 4) == 0 then ModeSpecial else ModeNormal,
                               Game.mode = if (n (snakeState oldState)) > 97 then ModeWon else (mode oldState)
                             }
           else newState
@@ -138,7 +145,23 @@ generalItemMove UpdateFunctions { successMove, successSpeed, failureMove, failur
                     oldPosition     = position oldItem
                     oldSpeed        = speed oldItem
                     desiredPosition = successMove oldItem
-                in if isItemPositionValid desiredPosition
+                    (xPos, yPos)    =  oldPosition
+                in if (snakeMode oldWorld) == ModeSpecial && not (isItemPositionValid desiredPosition)
+                  then
+                    oldWorld {
+                    snakeState = SnakeItemState {
+                          snakes = [ItemState { position =  case mode oldWorld of
+                                                              ModeLeft  -> (fromIntegral(Config.boardWidth - 2) :: Float, yPos)
+                                                              ModeRight -> (1.0, yPos)
+                                                              ModeUp    -> (xPos, 1.0)
+                                                              ModeDown  -> (xPos, fromIntegral(Config.boardHeight - 2) :: Float)
+                                                              _        -> desiredPosition,
+                                                speed    = successSpeed oldItem}]
+                                    ++ (init oldSnake),
+                          n = n oldSnakeState
+                    }
+                  }
+                  else if isItemPositionValid desiredPosition
                     then oldWorld {
                             snakeState = SnakeItemState {
                                   snakes = [ItemState { position = desiredPosition,

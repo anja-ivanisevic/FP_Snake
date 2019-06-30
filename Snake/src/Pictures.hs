@@ -5,6 +5,7 @@ import Graphics.Gloss.Game
 import Graphics.Gloss
 
 wall   = png "data/wall.png"
+emptyWall = png "data/lcon-001.png"
 hall   = png "data/hall.png"
 
 background = png "data/labyrinth-background.png"

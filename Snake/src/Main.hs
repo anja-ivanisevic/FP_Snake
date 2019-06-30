@@ -17,7 +17,7 @@ import qualified Config
 render :: Game.State -> Picture
 render state =
        let contentScale = Game.contentScale state
-           content      = pictures  $ [D.board]
+           content      = pictures  $ [(D.board state)]
                                     ++  (D.snake state)
                                     ++ [D.food $ Game.foodState state]
 

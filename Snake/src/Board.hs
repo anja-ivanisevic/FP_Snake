@@ -27,19 +27,19 @@ fieldForChar  _  = Hall
 boardFields = [ map fieldForChar row
                 | row <- Config.boardData ]
 
-fieldPicture Hall = Pictures.hall
-fieldPicture Wall = Pictures.wall
+fieldPicture pic Hall  = Pictures.hall
+fieldPicture pic Wall = pic
 
-rowPicture :: [Field] -> Picture
-rowPicture fields =
+rowPicture ::  Picture -> [Field] -> Picture
+rowPicture pic fields =
     let combine = \ current previous -> pictures [
                 translate Config.blockSize 0 previous,
                 current ]
-    in  foldr1 combine $ map fieldPicture fields
+    in  foldr1 combine $ map (fieldPicture pic) fields
 
-picture :: Picture
-picture = let combine = \ current previous -> pictures [ translate 0 Config.blockSize previous, current ]
-          in  foldl1 (flip combine) $ map rowPicture boardFields
+picture :: Picture -> Picture
+picture pic = let combine = \ current previous -> pictures [ translate 0 Config.blockSize previous, current ]
+          in  foldl1 (flip combine) $ map (rowPicture pic) boardFields
 
 -- Positioning functions
 
