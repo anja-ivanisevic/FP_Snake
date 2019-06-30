@@ -20,8 +20,8 @@ data FoodItemState = FoodItemState { positionF  :: Board.Position
                                      , foodPositionsY :: [Int]
                                    } deriving Show
 
-data SnakeItemState = SnakeItemState { snakes :: [ItemState],
-                                      n :: Int
+data SnakeItemState = SnakeItemState { snakes :: [ItemState]
+                                      , n :: Int
                                      } deriving Show
 
 data Mode = ModeSplash
@@ -45,6 +45,7 @@ data State = State { snakeState   :: SnakeItemState
                    , snakeMode    :: SnakeMode
                    , windowSize   :: (Int, Int)
                    , contentScale :: Float
+                   , sec :: Int
                    } deriving Show
 
 
@@ -55,6 +56,7 @@ initialState = State { snakeState   = initialSnakeState
                      , snakeMode    = ModeNormal
                      , windowSize   = Config.windowSize
                      , contentScale = 1
+                     , sec = 0
                      }
 
 
@@ -107,17 +109,25 @@ update seconds oldState =
   if (mode oldState) == ModeWon then oldState else
        let newState = snakeUpdate seconds oldState
            n_snakes = n $ snakeState $ newState
+           snakeSec = sec $ oldState
+           isModeSpecial = (snakeMode oldState) == ModeSpecial
+           newSnakeMode = if isModeSpecial && snakeSec < 100 then ModeSpecial else ModeNormal
+           newSnakeSec  = if newSnakeMode == ModeSpecial then (snakeSec + 1) else 0
        in if n_snakes > 4 && snakesCollide (snakeState newState)
               then newState {
                         mode = ModeLost
                     }
           else if itemsCollide (snakeState newState) (foodState newState)
-              then newState { Game.foodState  = foodUpdate oldState,
-                              Game.snakeState = growSnake (snakeState newState),
-                              Game.snakeMode = if (mod (x (foodState oldState)) 4) == 0 then ModeSpecial else ModeNormal,
-                              Game.mode = if (n (snakeState oldState)) > 97 then ModeWon else (mode oldState)
+              then newState { Game.foodState  = foodUpdate oldState
+                              , Game.snakeState = growSnake (snakeState newState)
+                              , Game.snakeMode =  if (mod (x (foodState oldState)) 6) == 0 then ModeSpecial else newSnakeMode
+                              , Game.mode = if (n (snakeState oldState)) > 97 then ModeWon else (mode oldState)
+                              , Game.sec = newSnakeSec
                             }
-          else newState
+          else newState {
+              Game.sec = newSnakeSec
+            , Game.snakeMode = newSnakeMode
+          }
 
 
 
