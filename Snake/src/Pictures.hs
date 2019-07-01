@@ -4,9 +4,9 @@ import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Game
 import Graphics.Gloss
 
-wall   = png "data/wall.png"
+wall      = png "data/wall.png"
 emptyWall = png "data/lcon-001.png"
-hall   = png "data/hall.png"
+hall      = png "data/hall.png"
 
 background = png "data/labyrinth-background.png"
 splash     = png "data/labyrinth-splash.png"
@@ -16,4 +16,4 @@ won        = png "data/labyrinth-won.png"
 itemPicture what = pictures [ color white $ rectangleWire 32 32, png ("data/" ++ what ++ "-001.png") ]
 
 snake  = itemPicture "king"
-food = itemPicture "baby"
+food   = itemPicture "baby"

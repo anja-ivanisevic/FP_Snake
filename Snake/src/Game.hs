@@ -14,21 +14,20 @@ data ItemState = ItemState { position  :: Board.Position
                            , speed     :: (Float, Float)
                            } deriving Show
 
-data FoodItemState = FoodItemState { positionF  :: Board.Position
-                                     , x :: Int
+data FoodItemState = FoodItemState { positionF        :: Board.Position
+                                     , x              :: Int
                                      , foodPositionsX :: [Int]
                                      , foodPositionsY :: [Int]
                                    } deriving Show
 
 data SnakeItemState = SnakeItemState { snakes :: [ItemState]
-                                      , n :: Int
+                                      , n     :: Int
                                      } deriving Show
 
 data Mode = ModeSplash
           | ModeWon
           | ModeLost
           | ModeStart
-          | ModeStill
           | ModeLeft
           | ModeRight
           | ModeUp
@@ -40,23 +39,23 @@ data SnakeMode = ModeNormal
               deriving (Show, Eq)
 
 data State = State { snakeState   :: SnakeItemState
-                   , foodState  :: FoodItemState
+                   , foodState    :: FoodItemState
                    , mode         :: Mode
                    , snakeMode    :: SnakeMode
                    , windowSize   :: (Int, Int)
                    , contentScale :: Float
-                   , sec :: Int
+                   , sec          :: Int
                    } deriving Show
 
 
 initialState :: State
 initialState = State { snakeState   = initialSnakeState
-                     , foodState  = initialFoodState
+                     , foodState    = initialFoodState
                      , mode         = ModeSplash
                      , snakeMode    = ModeNormal
                      , windowSize   = Config.windowSize
                      , contentScale = 1
-                     , sec = 0
+                     , sec          = 0
                      }
 
 
@@ -196,7 +195,7 @@ randomList x n = take n $ randomRs (1, x) (mkStdGen (round (unsafePerformIO getP
 initialFoodState = let xs = randomList (Config.boardWidth -2) 100
                        ys = randomList (Config.boardHeight -2) 100
                    in FoodItemState { positionF = (fromIntegral (xs !! 0) :: Float, fromIntegral (ys !! 0) :: Float)
-                                      , x = 1
+                                      , x = 0
                                       , foodPositionsX = xs
                                       , foodPositionsY = ys
                                     }

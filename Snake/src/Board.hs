@@ -51,7 +51,6 @@ initialPosition c = let rowIndex = fromMaybe 0 $ findIndex (elem c) Config.board
 
 
 initialSnakePosition  = initialPosition 'S'
-initialFoodPosition = initialPosition 'F'
 
 
 movedBy :: (Float, Float) -> Position -> Position

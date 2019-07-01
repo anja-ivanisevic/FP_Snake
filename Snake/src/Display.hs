@@ -20,9 +20,9 @@ showAt :: Picture -> Board.Position -> Picture
 showAt picture (x, y) = translate (blockSize * x + boardOffsetHorizontal) (blockSize * y + boardOffsetVertical) picture
 
 board :: Game.State -> Picture
-board state=
+board state =
   let pic = if (Game.snakeMode state) == Game.ModeSpecial then P.emptyWall else P.wall
-  in  showAt (Board.picture pic) (0, 0) 
+  in  showAt (Board.picture pic) (0, 0)
 
 fullImage :: Picture -> (Int, Int) -> Picture
 fullImage picture windowSize =

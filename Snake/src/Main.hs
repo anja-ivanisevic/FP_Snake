@@ -28,7 +28,7 @@ render state =
                 Game.ModeSplash -> splashScreen
                 Game.ModeWon    -> wonScreen
                 Game.ModeLost   -> lostScreen
-                _ ->            pictures [ D.background $ Game.windowSize state
+                _               -> pictures [ D.background $ Game.windowSize state
                                         , scale contentScale contentScale content
                                         ]
 
