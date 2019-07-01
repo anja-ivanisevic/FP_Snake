@@ -9,3 +9,5 @@ Igrica je predjena kad zmijica pojede svu hranu.
 - End game - Key Esc
 - Restart game - Key Space
 - Move - Keys Up, Down, Left, Right
+
+Kostur projekta je preuzet sa sajta asistenta - http://poincare.matf.bg.ac.rs/~ivan.
