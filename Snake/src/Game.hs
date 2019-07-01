@@ -28,6 +28,7 @@ data Mode = ModeSplash
           | ModeWon
           | ModeLost
           | ModeStart
+          | ModeStill
           | ModeLeft
           | ModeRight
           | ModeUp

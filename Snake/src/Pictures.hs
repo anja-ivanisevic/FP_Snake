@@ -9,7 +9,7 @@ emptyWall = png "data/lcon-001.png"
 hall      = png "data/hall.png"
 
 background = png "data/labyrinth-background.png"
-splash     = png "data/labyrinth-splash.png"
+splash     = png "data/snake_start.png"
 lost       = png "data/labyrinth-lost.png"
 won        = png "data/labyrinth-won.png"
 

@@ -1,6 +1,6 @@
 module Config where
 
-windowSize = (1000, 1000) :: (Int, Int)
+windowSize = (1000, 700) :: (Int, Int)
 
 boardData = [ "################"
             , "#              #"

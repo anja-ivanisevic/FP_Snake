@@ -2,7 +2,6 @@ module Board ( Field (Hall, Wall)
              , Position
              , picture
              , initialSnakePosition
-             , initialFoodPosition
              , movedBy
              , field
              ) where
