@@ -196,7 +196,7 @@ randomList x n = take n $ randomRs (1, x) (mkStdGen (round (unsafePerformIO getP
 initialFoodState = let xs = randomList (Config.boardWidth -2) 100
                        ys = randomList (Config.boardHeight -2) 100
                    in FoodItemState { positionF = (fromIntegral (xs !! 0) :: Float, fromIntegral (ys !! 0) :: Float)
-                                      , x = 0
+                                      , x = 1
                                       , foodPositionsX = xs
                                       , foodPositionsY = ys
                                     }
